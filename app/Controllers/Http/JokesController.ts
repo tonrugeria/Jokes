@@ -3,6 +3,7 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Joke from 'App/Models/Joke';
 import Rating from 'App/Models/Rating';
 import Comment from 'App/Models/Comment';
+import User from 'App/Models/User';
 
 export default class JokesController {
   public async interactions({ params, request, response, auth }: HttpContextContract) {
@@ -63,13 +64,6 @@ export default class JokesController {
         }
       }
 
-      // if(payload.comment) {
-      //   await user.related('comments').create({
-      //     jokeId: joke.id,
-      //     content: payload.comment
-      //   })
-      // }
-
       return response.created({ message: 'Interactions recorded Successfully'})
 
     } catch (error) {
@@ -77,17 +71,96 @@ export default class JokesController {
     }
   }
 
-  public async index({}: HttpContextContract) {}
+  public async index({}: HttpContextContract) {
+    const jokes = await Joke.all()
+    return jokes
+  }
 
   public async create({}: HttpContextContract) {}
 
-  public async store({}: HttpContextContract) {}
+  public async store({ request, response, auth }: HttpContextContract) {
+    const validator = schema.create({
+      content: schema.string()
+    })
 
-  public async show({}: HttpContextContract) {}
+    try {
+      const payload = await request.validate({
+        schema: validator,
+        messages: {
+          'content.required': 'Joke content is required'
+        }
+      })
+
+      const user = auth.user!
+      await user.related('jokes').create({
+        content: payload.content
+      })
+
+      return response.created({
+        message: "Joke created successfully"
+      })
+    } catch (error) {
+      return response.badRequest(error.message)
+    }
+  }
+
+  public async show({ params }: HttpContextContract) {
+    const joke = await Joke.findBy('id', params.id)
+
+    return joke
+  }
 
   public async edit({}: HttpContextContract) {}
 
-  public async update({}: HttpContextContract) {}
+  public async update({ params, request, auth, response }: HttpContextContract) {
+    const validator = schema.create({
+      content: schema.string()
+    })
 
-  public async destroy({}: HttpContextContract) {}
+    try {
+      const payload = await request.validate({
+        schema: validator,
+        messages: {
+          'content.required': 'Joke content is required'
+        }
+      })
+
+      const user = auth.user!
+      const joke = await Joke.find(params.id)
+
+      if(!joke) {
+        return response.notFound({ message: 'Joke not found' })
+      }
+
+      if (joke.userId !== user.id) {
+        return response.forbidden({ message: 'You do not have permission to edit this Joke'})
+      }
+
+      joke.content = payload.content
+      await joke.save()
+
+      return response.ok({ message: 'Joke updated successfully' })
+    } catch (error) {
+      return response.badRequest(error.message)
+    }
+
+    
+  }
+
+  public async destroy({ params, response, auth }: HttpContextContract) {
+    const user = auth.user!
+    const joke = await Joke.find(params.id)
+
+    if(!joke) {
+      return response.notFound({ message: 'Joke not found' })
+    }
+
+    if (joke.userId !== user.id) {
+      return response.forbidden({ message: 'You do not have permission to delete this Joke'})
+    }
+
+    await joke.delete()
+
+    return response.ok({ message: 'Joke deleted successfully' })
+  }
 }

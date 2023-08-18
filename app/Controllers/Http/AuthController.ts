@@ -43,6 +43,8 @@ export default class AuthController {
         // const password = request.input('password')
 
         const { email, password } = request.all()
+        // console.log("REQUEST ALL", request.all());
+        
 
         try {
             const token = await auth.attempt(email, password)

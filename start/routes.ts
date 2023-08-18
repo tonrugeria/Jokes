@@ -28,7 +28,10 @@ Route.post('/register', "AuthController.register")
 Route.post('/login', "AuthController.login")
 
 Route.group(() => {
-  Route.get('/jokes', 'JokesController.store')
+  Route.get('/jokes', 'JokesController.index')
   Route.post('/jokes', 'JokesController.store')
+  Route.get('/jokes/:id', 'JokesController.show')
+  Route.put('/jokes/:id', 'JokesController.update')
+  Route.delete('/jokes/:id', 'JokesController.destroy')
   Route.post('/jokes/:id/interactions', 'JokesController.interactions')
 }).middleware('auth')
