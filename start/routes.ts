@@ -34,6 +34,7 @@ Route.group(() => {
     return view.render('jokes/index')
   })
   Route.get('/jokes', 'JokesController.index')
+  Route.get('/jokes/create', 'JokesController.create')
   Route.post('/jokes', 'JokesController.store')
   Route.get('/jokes/:id', 'JokesController.show')
   Route.put('/jokes/:id', 'JokesController.update')

@@ -1,23 +1,15 @@
-import { schema, rules } from '@ioc:Adonis/Core/Validator';
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Joke from 'App/Models/Joke';
 import Rating from 'App/Models/Rating';
 import Comment from 'App/Models/Comment';
+import Database from '@ioc:Adonis/Lucid/Database';
+import JokeValidator from 'App/Validators/JokeValidator';
+import InteractionValidator from 'App/Validators/InteractionValidator';
 
 export default class JokesController {
   public async interactions({ params, request, response, auth }: HttpContextContract) {
-    const validator = schema.create({
-      rating: schema.number.optional([
-        rules.range(1, 10)
-      ]),
-      comment: schema.string.optional()
-    })
-
     try {
-      const payload = await request.validate({
-        schema: validator
-      })
-
+      const payload = await request.validate(InteractionValidator)
       const user = auth.user!
       const joke = await Joke.find(params.id)
 
@@ -70,41 +62,26 @@ export default class JokesController {
     }
   }
 
-  public async index({ view, auth }: HttpContextContract) {
-    // await auth.authenticate()
-    // console.log(auth.user!)
-    // const jokes = await Joke.all()
-    // return jokes
-    const jokes = await Joke.all()
+  public async index({ view }: HttpContextContract) {
+    const jokes = await Database.from('jokes')
+      .join('users', 'users.id', '=', 'jokes.user_id')
+
     return view.render('jokes/index', { jokes })
   }
 
-  public async create({}: HttpContextContract) {}
+  public async create({ view }: HttpContextContract) {
+    return view.render('jokes/posting')
+  }
 
   public async store({ request, response, auth }: HttpContextContract) {
-    const validator = schema.create({
-      content: schema.string()
+    const payload = await request.validate(JokeValidator)
+    const user = auth.user!
+
+    await user.related('jokes').create({
+      content: payload.content
     })
 
-    try {
-      const payload = await request.validate({
-        schema: validator,
-        messages: {
-          'content.required': 'Joke content is required'
-        }
-      })
-
-      const user = auth.user!
-      await user.related('jokes').create({
-        content: payload.content
-      })
-
-      return response.created({
-        message: "Joke created successfully"
-      })
-    } catch (error) {
-      return response.badRequest(error.message)
-    }
+    return response.redirect().back()
   }
 
   public async show({ params }: HttpContextContract) {
@@ -116,17 +93,8 @@ export default class JokesController {
   public async edit({}: HttpContextContract) {}
 
   public async update({ params, request, auth, response }: HttpContextContract) {
-    const validator = schema.create({
-      content: schema.string()
-    })
-
     try {
-      const payload = await request.validate({
-        schema: validator,
-        messages: {
-          'content.required': 'Joke content is required'
-        }
-      })
+      const payload = await request.validate(JokeValidator)
 
       const user = auth.user!
       const joke = await Joke.find(params.id)
@@ -146,8 +114,6 @@ export default class JokesController {
     } catch (error) {
       return response.badRequest(error.message)
     }
-
-    
   }
 
   public async destroy({ params, response, auth }: HttpContextContract) {
