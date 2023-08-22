@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Post a Joke</title>
+</head>
+<body>
+    <h1>Post a Joke</h1>
+    <form action="{{ route('JokesController.store')}}" method="post">
+        {{ csrfField() }}
+        <textarea name="content" id="" cols="30" rows="10" placeholder="Are you joking?"></textarea>
+        @if(flashMessages.has('errors.content'))
+            <p> {{ flashMessages.get('errors.content') }} </p>
+        @end
+
+        <button type="submit">Create</button>
+    </form>
+</body>
+</html>
