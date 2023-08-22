@@ -3,52 +3,75 @@ import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import User from 'App/Models/User'
 
 export default class AuthController {
-    public async register({ request, response }: HttpContextContract) {
+    public async registerForm({ view }: HttpContextContract) {
+      return view.render('auth/register')
+    }
+
+    public async register({ request, response, auth }: HttpContextContract) {
         const validator = schema.create({
-            username: schema.string(),
-            email: schema.string({}, [
-                rules.email()
+            username: schema.string({ trim: true },[
+              rules.unique({
+                table: 'users',
+                column: 'username',
+                caseInsensitive: true
+              })
             ]),
-            password: schema.string([
+            email: schema.string({}, [
+                rules.email(),
+                rules.unique({
+                  table: 'users',
+                  column: 'email',
+                  caseInsensitive: true
+                })
+            ]),
+            password: schema.string({}, [
                 rules.confirmed(),
                 rules.minLength(6)
               ])
         })
 
         try {
-            const payload = await request.validate({
-              schema: validator,
-              messages: {
-                'email': 'Improper format email',
-                'password': 'Password is too short',
-                'password_confirmation.confirmed': 'Password do not match'
-              }
-            })
-
-            // const userData = request.only(['username', 'email', 'password'])
+            const payload = await request.validate({schema: validator})
             const user = await User.create(payload)
+
+            await auth.login(user)
         
             response.status(201)
-
-            return response.json({ message: 'User registered successfully', user})
+            response.redirect().toPath('/jokes')
+            // return response.json({ message: 'User registered successfully', user})
+            // session.flash('successMessage', 'User registered successfully')
           } catch (error) {
-            response.badRequest(error.messages)
+            response.redirect().back()
+            // session.flash('errorMessages', error.messages)
+            // response.badRequest(error.messages)
           }
-
-        
     }
 
-    public async login({ request, response, auth }: HttpContextContract) {
-        // const email = request.input('email')
-        // const password = request.input('password')
+    public async loginForm({ view }: HttpContextContract) {
+      return view.render('auth/login')
+  }
 
-        const { email, password } = request.all()
+    public async login({ request, response, auth, session }: HttpContextContract) {
+        // const { email, password } = request.all()
+        const { email, password } = request.only(['email', 'password'])
 
         try {
-            const token = await auth.attempt(email, password)
-            return token
-        } catch {
-            return response.unauthorized('Invalid credentials')
+            // const token = await auth.attempt(email, password)
+            // return token
+
+            await auth.attempt(email, password)
+            response.redirect().toPath('/jokes')
+
+        } catch(error) {
+            // return response.unauthorized('Invalid credentials')
+            session.flash('form', 'Your username, email or password is incorrect')
+            return response.redirect().back()
         }
+    }
+
+    public async logout({ response, auth}: HttpContextContract) {
+      await auth.logout()
+
+      return response.redirect('/login')
     }
 }

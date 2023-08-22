@@ -20,15 +20,23 @@
 
 import Route from '@ioc:Adonis/Core/Route'
 
-Route.get('/', async ({ view }) => {
-  return view.render('welcome')
-}).middleware('auth')
+Route.group(() => {
+  Route.get('/register', "AuthController.registerForm")
+  Route.post('/register', "AuthController.register")
+  Route.get('/login', "AuthController.loginForm")
+  Route.post('/login', "AuthController.login")
+}).middleware('guest')
 
-Route.post('/register', "AuthController.register")
-Route.post('/login', "AuthController.login")
+Route.get('/logout', "AuthController.logout")
 
 Route.group(() => {
-  Route.get('/jokes', 'JokesController.store')
+  Route.get('/', async ({ view }) => {
+    return view.render('jokes/index')
+  })
+  Route.get('/jokes', 'JokesController.index')
   Route.post('/jokes', 'JokesController.store')
+  Route.get('/jokes/:id', 'JokesController.show')
+  Route.put('/jokes/:id', 'JokesController.update')
+  Route.delete('/jokes/:id', 'JokesController.destroy')
   Route.post('/jokes/:id/interactions', 'JokesController.interactions')
 }).middleware('auth')
