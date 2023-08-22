@@ -84,6 +84,10 @@
 </head>
 <body>
 
+  @if(auth.user)
+    <a href="{{ route('AuthController.logout') }}">Logout</a>
+  @endif
+
   <main>
     <div>
       <h1 class="title"> It Works! </h1>

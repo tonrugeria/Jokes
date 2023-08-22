@@ -3,7 +3,6 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Joke from 'App/Models/Joke';
 import Rating from 'App/Models/Rating';
 import Comment from 'App/Models/Comment';
-import User from 'App/Models/User';
 
 export default class JokesController {
   public async interactions({ params, request, response, auth }: HttpContextContract) {
@@ -71,9 +70,13 @@ export default class JokesController {
     }
   }
 
-  public async index({}: HttpContextContract) {
+  public async index({ view, auth }: HttpContextContract) {
+    // await auth.authenticate()
+    // console.log(auth.user!)
+    // const jokes = await Joke.all()
+    // return jokes
     const jokes = await Joke.all()
-    return jokes
+    return view.render('jokes/index', { jokes })
   }
 
   public async create({}: HttpContextContract) {}
