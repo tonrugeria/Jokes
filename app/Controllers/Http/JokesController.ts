@@ -5,8 +5,10 @@ import Comment from 'App/Models/Comment';
 import Database from '@ioc:Adonis/Lucid/Database';
 import JokeValidator from 'App/Validators/JokeValidator';
 import InteractionValidator from 'App/Validators/InteractionValidator';
+import { DateTime } from 'luxon';
 
 export default class JokesController {
+
   public async interactions({ params, request, response, auth }: HttpContextContract) {
     try {
       const payload = await request.validate(InteractionValidator)
@@ -62,11 +64,40 @@ export default class JokesController {
     }
   }
 
-  public async index({ view }: HttpContextContract) {
+  public async index({ view, auth }: HttpContextContract) {
+    const user = auth.user!
+    // const jokes = await Database.from('jokes')
+    //   .join('users', 'users.id', '=', 'jokes.user_id')
+
+    function timeAgo(jokeDate) {
+      const formattedJokeDate = DateTime.fromJSDate(jokeDate)
+      const dateNow = DateTime.now()
+      const diff = dateNow.diff(formattedJokeDate, ['days', 'hours', 'minutes'])
+      
+      if (diff.days > 0) {
+        return `${diff.days} day${diff.days === 1 ? '' : 's'} ago`;
+      } else if (diff.hours > 0) {
+        return `${diff.hours} hour${diff.hours === 1 ? '' : 's'} ago`;
+      } else if (diff.minutes > 0) {
+        const roundedMinutes = Math.floor(diff.minutes);
+        return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'} ago`;
+      } else {
+        return 'Just now';
+      }
+    }  
+
+    // console.log(jokes[6].created_at);
+
     const jokes = await Database.from('jokes')
       .join('users', 'users.id', '=', 'jokes.user_id')
+      .select('jokes.*', 'users.username', 'users.image')
+      .orderBy('jokes.created_at', 'desc')
+      .groupBy('jokes.id', 'users.username', 'users.image');
+    
 
-    return view.render('jokes/index', { jokes })
+    console.log(jokes);
+    
+    return view.render('jokes/index', { jokes, user, timeAgo })
   }
 
   public async create({ view }: HttpContextContract) {

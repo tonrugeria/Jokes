@@ -7,18 +7,16 @@ export default class AuthController {
     return view.render('auth/register')
   }
 
-  public async register({ request, response, auth }: HttpContextContract) {
-    try {
+  public async register({ request, response, auth, session }: HttpContextContract) {
+
       const payload = await request.validate(AuthValidator)
       const user = await User.create(payload)
 
       await auth.login(user)
   
       response.status(201)
+      session.flash('success', 'Registration Successfully')
       response.redirect().toPath('/jokes')
-    } catch (error) {
-      response.redirect().back()
-    }
   }
 
   public async loginForm({ view }: HttpContextContract) {
@@ -28,13 +26,9 @@ export default class AuthController {
   public async login({ request, response, auth, session }: HttpContextContract) {
     const { email, password } = request.only(['email', 'password'])
 
-    try {
-      await auth.attempt(email, password)
-      response.redirect().toPath('/jokes')
-    } catch(error) {
+    await auth.attempt(email, password)
+    response.redirect().toPath('/jokes')
       session.flash('form', 'Your username, email or password is incorrect')
-      return response.redirect().back()
-    }
   }
 
   public async logout({ response, auth}: HttpContextContract) {
