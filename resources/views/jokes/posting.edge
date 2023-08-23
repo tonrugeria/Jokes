@@ -1,14 +1,21 @@
 @layout('layouts/main')
 
 @section('content')
-<h1>Post a Joke</h1>
-<form action="{{ route('JokesController.store')}}" method="post">
-    {{ csrfField() }}
-    <textarea name="content" id="" cols="30" rows="10" placeholder="Are you joking?"></textarea>
-    @if(flashMessages.has('errors.content'))
-        <p> {{ flashMessages.get('errors.content') }} </p>
-    @end
-
-    <button type="submit">Create</button>
-</form>
+<div class="m-auto mt-5">
+    <form action="{{ route('JokesController.store')}}" method="post" class="container col-lg-6">
+        <h1>Post a Joke</h1>
+        {{ csrfField() }}
+        <div class="mb-3">
+            <label for="content" class="form-label">Give me your best shot</label>
+            <textarea name="content" class="form-control" id="content" rows="3" placeholder="Are you joking?"></textarea>
+        </div>
+        @if(flashMessages.has('errors.content'))
+            <p class="alert alert-danger"> {{ flashMessages.get('errors.content') }} </p>
+        @end
+    
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success mb-3 block flex">Create</button>
+        </div>
+    </form>
+</div>
 @endsection

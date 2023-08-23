@@ -24,7 +24,7 @@ export default class JokeValidator {
    *    ```
    */
   public schema = schema.create({
-    content: schema.string()
+    content: schema.string(),
   })
 
   /**
@@ -38,5 +38,7 @@ export default class JokeValidator {
    * }
    *
    */
-  public messages: CustomMessages = {}
+  public messages: CustomMessages = {
+    'content.required' : `Oh Come on! Don't be shy!`
+  }
 }

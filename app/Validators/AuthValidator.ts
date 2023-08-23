@@ -56,5 +56,10 @@ export default class AuthValidator {
    * }
    *
    */
-  public messages: CustomMessages = {}
+  public messages: CustomMessages = {
+    'username.unique' : 'Username Already Exist',
+    'email.unique' : 'Email Already Exists',
+    'password.minLength' : "Password is too short",
+    'password.confirmed' : 'Password does not match',
+  }
 }

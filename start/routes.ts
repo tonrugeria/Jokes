@@ -40,4 +40,7 @@ Route.group(() => {
   Route.put('/jokes/:id', 'JokesController.update')
   Route.delete('/jokes/:id', 'JokesController.destroy')
   Route.post('/jokes/:id/interactions', 'JokesController.interactions')
+
+  Route.get('/posts/', 'UsersController.getPosts')
+  Route.get('/profile/', 'UsersController.showProfile')
 }).middleware('auth')

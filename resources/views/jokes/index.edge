@@ -1,20 +1,30 @@
 @layout('layouts/main')
 
 @section('content')
-  {{--  
-  @if(auth.user)
-  <a href="{{ route('AuthController.logout') }}">Logout</a>
-  @endif  
---}}
-  <div class="album py-5 bg-light">
+
+  
+  <section class="py-5 text-center container">
+    <div class="row py-lg-3">
+      <div class="col-lg-6 col-md-8 mx-auto">
+        <h1>Education Technology Team Jokes</h1>
+        <p>Just For Fun 😜</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="bg-light">
     <div class="container">
-      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
         @each(joke in jokes)
         <div class="col">
           <div class="card shadow-sm">
-            <img src="{{joke.image}}" class="card-img-top img-thumbnail img-fluid" alt="...">
+              <img src="{{`images/${joke.image}`}}" class="card-img-top img-thumbnail" alt="...">
             <div class="card-body">
-              <p class="card-text">{{ joke.content}}</p>
+              <p class="card-text text-truncate">{{ joke.content }}</p>
+              <div class="d-flex justify-content-between">
+                  <a href="#">More...</a>
+                  <small>{{ timeAgo(joke.created_at) }}</small>
+              </div>
             </div>
           </div>
         </div>
@@ -22,4 +32,8 @@
       </div>
     </div>
   </div>
+  @if(auth.user)
+  <a href="{{ route('AuthController.logout') }}">Logout</a>
+  @endif  
+
 @endsection
