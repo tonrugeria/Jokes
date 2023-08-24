@@ -37,7 +37,8 @@ Route.group(() => {
   Route.get('/jokes/create', 'JokesController.create')
   Route.post('/jokes', 'JokesController.store')
   Route.get('/jokes/:id', 'JokesController.show')
-  Route.put('/jokes/:id', 'JokesController.update')
+  Route.get('/jokes/:id/edit', 'JokesController.edit')
+  Route.patch('/jokes/:id', 'JokesController.update')
   Route.delete('/jokes/:id', 'JokesController.destroy')
   Route.post('/jokes/:id/interactions', 'JokesController.interactions')
 

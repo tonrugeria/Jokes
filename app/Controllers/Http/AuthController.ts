@@ -26,9 +26,20 @@ export default class AuthController {
   public async login({ request, response, auth, session }: HttpContextContract) {
     const { email, password } = request.only(['email', 'password'])
 
-    await auth.attempt(email, password)
-    response.redirect().toPath('/jokes')
-      session.flash('form', 'Your username, email or password is incorrect')
+    try {
+      await auth.attempt(email, password)
+      response.redirect().toPath('/jokes');
+    } catch (error) {
+      if (error.code === 'E_INVALID_AUTH_UID') {
+        session.flash('errors.email', 'Invalid email');
+      } else if (error.code === 'E_INVALID_AUTH_PASSWORD') {
+          session.flash('errors.password', 'Invalid password');
+      } else {
+          session.flash('errors.form', 'Your username, email, or password is incorrect');
+      }
+      response.redirect().back();
+  }
+
   }
 
   public async logout({ response, auth}: HttpContextContract) {
