@@ -17,6 +17,10 @@
               <div class="card shadow-sm" style="height: 170px">
                 <div class="card-body overflow-auto">
                   <p class="card-text">{{ joke.content}}</p>
+                  <div class="d-flex justify-content-between">
+                    <a href="{{ route('JokesController.edit', [joke.id]) }}">More...</a>
+                    <small>{{ timeAgo(joke.updated_at) }}</small>
+                </div>
                 </div>
               </div>
             </div>

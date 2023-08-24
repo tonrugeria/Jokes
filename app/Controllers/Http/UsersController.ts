@@ -1,4 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
+import { DateTime } from 'luxon'
 
 export default class UsersController {
     public async showProfile({ view }: HttpContextContract) {
@@ -7,8 +9,31 @@ export default class UsersController {
 
     public async getPosts({ view, auth }: HttpContextContract) {
         const user = auth.user!
-        const jokes = await user.related('jokes').query()
+
+        function timeAgo(jokeDate) {
+            const formattedJokeDate = DateTime.fromJSDate(jokeDate)
+            const dateNow = DateTime.now()
+            const diff = dateNow.diff(formattedJokeDate, ['days', 'hours', 'minutes'])
+            
+            if (diff.days > 0) {
+              return `${diff.days} day${diff.days === 1 ? '' : 's'} ago`;
+            } else if (diff.hours > 0) {
+              return `${diff.hours} hour${diff.hours === 1 ? '' : 's'} ago`;
+            } else if (diff.minutes > 0) {
+              const roundedMinutes = Math.floor(diff.minutes);
+              return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'} ago`;
+            } else {
+              return 'Just now';
+            }
+          }  
+
+          const jokes = await Database.from('jokes')
+            .join('users', 'users.id', '=', 'jokes.user_id')
+            .where('users.id', user.id)
+            .select('jokes.*', 'users.username', 'users.image')
+            .orderBy('jokes.updated_at', 'desc')
+            .groupBy('jokes.id', 'users.username', 'users.image');
         
-        return view.render('users/posts', { jokes })
+        return view.render('users/posts', { jokes, timeAgo })
     }
 }

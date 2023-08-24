@@ -22,8 +22,8 @@
             <div class="card-body">
               <p class="card-text text-truncate">{{ joke.content }}</p>
               <div class="d-flex justify-content-between">
-                  <a href="#">More...</a>
-                  <small>{{ timeAgo(joke.created_at) }}</small>
+                  <a href="{{ route('JokesController.edit', [joke.id]) }}">More...</a>
+                  <small>{{ timeAgo(joke.updated_at) }}</small>
               </div>
             </div>
           </div>

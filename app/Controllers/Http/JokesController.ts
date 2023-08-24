@@ -66,8 +66,6 @@ export default class JokesController {
 
   public async index({ view, auth }: HttpContextContract) {
     const user = auth.user!
-    // const jokes = await Database.from('jokes')
-    //   .join('users', 'users.id', '=', 'jokes.user_id')
 
     function timeAgo(jokeDate) {
       const formattedJokeDate = DateTime.fromJSDate(jokeDate)
@@ -86,16 +84,11 @@ export default class JokesController {
       }
     }  
 
-    // console.log(jokes[6].created_at);
-
     const jokes = await Database.from('jokes')
       .join('users', 'users.id', '=', 'jokes.user_id')
       .select('jokes.*', 'users.username', 'users.image')
-      .orderBy('jokes.created_at', 'desc')
+      .orderBy('jokes.updated_at', 'desc')
       .groupBy('jokes.id', 'users.username', 'users.image');
-    
-
-    console.log(jokes);
     
     return view.render('jokes/index', { jokes, user, timeAgo })
   }
@@ -121,30 +114,29 @@ export default class JokesController {
     return joke
   }
 
-  public async edit({}: HttpContextContract) {}
+  public async edit({ view, params }: HttpContextContract) {
+    const { id } = params
+    const joke = await Joke.find(id)
 
-  public async update({ params, request, auth, response }: HttpContextContract) {
+    return view.render('jokes/edit', { joke })
+  }
+
+  public async update({ request, response, params, session }: HttpContextContract) {
+    const payload = await request.validate(JokeValidator)
+    
     try {
-      const payload = await request.validate(JokeValidator)
-
-      const user = auth.user!
-      const joke = await Joke.find(params.id)
-
-      if(!joke) {
-        return response.notFound({ message: 'Joke not found' })
-      }
-
-      if (joke.userId !== user.id) {
-        return response.forbidden({ message: 'You do not have permission to edit this Joke'})
-      }
-
-      joke.content = payload.content
-      await joke.save()
-
-      return response.ok({ message: 'Joke updated successfully' })
+      const joke = await Joke.findOrFail(params.id);
+  
+      joke.content = payload.content;
+      
+      await joke.save();
+  
+      session.flash('success', 'Joke updated successfully');
     } catch (error) {
-      return response.badRequest(error.message)
+      session.flash('error', 'Joke not found or could not be updated');
     }
+
+    return response.redirect().back()
   }
 
   public async destroy({ params, response, auth }: HttpContextContract) {
