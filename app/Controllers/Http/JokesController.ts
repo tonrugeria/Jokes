@@ -153,6 +153,6 @@ export default class JokesController {
 
     await joke.delete()
 
-    return response.ok({ message: 'Joke deleted successfully' })
+    return response.redirect().back()
   }
 }
