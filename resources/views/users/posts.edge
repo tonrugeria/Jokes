@@ -9,24 +9,31 @@
   </div>
 </section>
 <div class="m-auto mt-5">
-    <div class="album bg-light">
-        <div class="container">
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
-            @each(joke in jokes)
-            <div class="col">
-              <div class="card shadow-sm" style="height: 170px">
-                <div class="card-body overflow-auto">
-                  <p class="card-text">{{ joke.content}}</p>
-                  <div class="d-flex justify-content-between">
-                    <a href="{{ route('JokesController.edit', [joke.id]) }}">More...</a>
-                    <small>{{ timeAgo(joke.updated_at) }}</small>
-                </div>
-                </div>
+  <div class="album bg-light">
+    <div class="container">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3">
+        @each(joke in jokes)
+        <div class="col">
+          <div class="card shadow-sm" style="height: 170px">
+            <div class="card-body overflow-auto">
+              <p class="card-text">{{ joke.content}}</p>
+              <a href="#">More...</a>
+              <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="btn-group">
+                  <a href="{{ route('JokesController.edit', [joke.id]) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  <form action="{{ route('JokesController.destroy', [joke.id]) }}?_method=DELETE" method="post">
+                    {{ csrfField() }}
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Delete</button>
+                  </form>
+                  </div>
+                  <small class="text-muted">{{ timeAgo(joke.updated_at) }}</small>
               </div>
             </div>
-            @endeach
           </div>
         </div>
+        @endeach
       </div>
+    </div>
+  </div>
 </div>
 @endsection
