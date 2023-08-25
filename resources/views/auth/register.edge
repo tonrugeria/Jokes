@@ -8,39 +8,40 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
 </head>
 <body>
-    <div class="form-signin w-100 m-auto text-center d-flex justify-content-center mt-5">
+    <div class="form-signin w-75 m-auto text-center d-flex justify-content-center mt-5">
         <form action="{{ route('AuthController.register')}}" class="col-lg-4" method="POST">
             {{ csrfField() }}
             <h1 class="h3 mb-3 fw-normal">Please Register</h1>
+            @if(flashMessages.has('errors.username'))
+                <p class="alert alert-danger"> {{ flashMessages.get('errors.username') }} </p>
+            @end
             <div class="form-floating">
-                @if(flashMessages.has('errors.username'))
-                    <p class="alert alert-danger"> {{ flashMessages.get('errors.username') }} </p>
-                @end
                 <input type="text" class="form-control" id="username" name="username" required autocomplete="off"><br>
                 <label for="username">Username</label>
             </div>
+            @if(flashMessages.has('errors.email'))
+                <p class="alert alert-danger"> {{ flashMessages.get('errors.email') }} </p>
+            @end
             <div class="form-floating">
-                @if(flashMessages.has('errors.email'))
-                    <p class="alert alert-danger"> {{ flashMessages.get('errors.email') }} </p>
-                @end
                 <input type="email" class="form-control" id="email" name="email" required autocomplete="off"><br>
                 <label for="email">Email</label>
             </div>
+            @if(flashMessages.has('errors.password'))
+                <p class="alert alert-danger"> {{ flashMessages.get('errors.password') }} </p>
+            @end
             <div class="form-floating">
-                @if(flashMessages.has('errors.password'))
-                    <p class="alert alert-danger"> {{ flashMessages.get('errors.password') }} </p>
-                @end
                 <input type="password" class="form-control" id="password" name="password" required autocomplete="off"><br>
                 <label for="password">Password</label>
             </div>
+            @if(flashMessages.has('errors.password_confirmation'))
+                <p class="alert alert-danger"> {{ flashMessages.get('errors.password_confirmation') }} </p>
+            @end
             <div class="form-floating">
-                @if(flashMessages.has('errors.password_confirmation'))
-                    <p class="alert alert-danger"> {{ flashMessages.get('errors.password_confirmation') }} </p>
-                @end
                 <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required autocomplete="off"><br>
                 <label for="password_confirmation">Confirm Password</label>
             </div>
             <button type="submit" class="btn btn-success btn-lg w-100">Register</button>
+            <span>Already Registered?</span><a href="{{route('AuthController.login')}}">Login</a>
         </form>
     </div>
 
