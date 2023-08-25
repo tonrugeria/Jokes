@@ -2,6 +2,7 @@ import Application from '@ioc:Adonis/Core/Application';
 import type { HttpContextContract, } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 import User from 'App/Models/User'
+import PasswordValidator from 'App/Validators/PasswordValidator';
 import UserValidator from 'App/Validators/UserValidator'
 import { DateTime } from 'luxon'
 
@@ -61,5 +62,21 @@ export default class UsersController {
             .groupBy('jokes.id', 'users.username', 'users.image');
         
         return view.render('users/posts', { jokes, timeAgo })
+    }
+
+    public async showChangePassword({view}: HttpContextContract) {
+      return view.render('users/password')
+    }
+
+    public async changePassword({ auth, request, session, response }: HttpContextContract) {
+      const user = auth.user!
+
+      const payload = await request.validate(PasswordValidator)
+
+      user.password = payload.password
+
+      await user.save()
+      session.flash('success', 'Registration Successfully')
+      response.redirect().back()
     }
 }

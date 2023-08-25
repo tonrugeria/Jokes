@@ -1,7 +1,7 @@
 import { schema, CustomMessages, rules } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-export default class AuthValidator {
+export default class PasswordValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   /*
@@ -24,25 +24,11 @@ export default class AuthValidator {
    *    ```
    */
   public schema = schema.create({
-    username: schema.string({ trim: true },[
-      rules.unique({
-        table: 'users',
-        column: 'username',
-        caseInsensitive: true
-      })
-    ]),
-    email: schema.string({}, [
-        rules.email(),
-        rules.unique({
-          table: 'users',
-          column: 'email',
-          caseInsensitive: true
-        })
-    ]),
     password: schema.string({}, [
-        rules.confirmed(),
-        rules.minLength(6)
-      ])
+      rules.confirmed(),
+      rules.minLength(6),
+      rules.unique({table: 'users', column: 'password'})
+    ])
   })
 
   /**
@@ -57,10 +43,9 @@ export default class AuthValidator {
    *
    */
   public messages: CustomMessages = {
-    'email.email': 'Invalid email format. Please enter a valid email address.',
-    'username.unique' : 'Username Already Exist',
-    'email.unique' : 'Email Already Exists',
+    'password.required': 'Password is required',
     'password.minLength' : "Password is too short",
+    'password.unique' : 'Password is the same as before',
     'password_confirmation.confirmed': 'Password do not match'
   }
 }

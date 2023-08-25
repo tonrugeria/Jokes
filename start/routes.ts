@@ -28,6 +28,10 @@ Route.group(() => {
 }).middleware('guest')
 
 Route.get('/logout', "AuthController.logout")
+// Route.get('*', async ({ response }) => {
+//   return response.redirect().toPath('views/not_found'); // Redirect to the "not-found" page
+// });
+// Route.get('/not-found', 'NotFoundController.index').as('notFound');
 
 Route.group(() => {
   Route.get('/', async ({ view }) => {
@@ -36,8 +40,11 @@ Route.group(() => {
   Route.resource('jokes', 'JokesController')
   Route.post('/jokes/:id/interactions', 'JokesController.interactions')
 
-  Route.get('/posts/', 'UsersController.getPosts')
+  Route.get('/posts', 'UsersController.getPosts')
   Route.get('/profile', 'UsersController.showProfile')
   Route.patch('/profile', 'UsersController.updateProfile')
+  Route.get('/change-password', "UsersController.showChangePassword")
+  Route.patch('/change-password', "UsersController.changePassword")
 
+  Route.get('*', 'NotFoundController.index').as('notFound');
 }).middleware('auth')
