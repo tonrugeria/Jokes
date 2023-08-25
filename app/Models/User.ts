@@ -16,7 +16,7 @@ export default class User extends BaseModel {
   public email: string
 
   @column()
-  public image: string
+  public image?: string
 
   @column({serializeAs: null})
   public password: string

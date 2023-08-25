@@ -33,15 +33,11 @@ Route.group(() => {
   Route.get('/', async ({ view }) => {
     return view.render('jokes/index')
   })
-  Route.get('/jokes', 'JokesController.index')
-  Route.get('/jokes/create', 'JokesController.create')
-  Route.post('/jokes', 'JokesController.store')
-  Route.get('/jokes/:id', 'JokesController.show')
-  Route.get('/jokes/:id/edit', 'JokesController.edit')
-  Route.patch('/jokes/:id', 'JokesController.update')
-  Route.delete('/jokes/:id', 'JokesController.destroy')
+  Route.resource('jokes', 'JokesController')
   Route.post('/jokes/:id/interactions', 'JokesController.interactions')
 
   Route.get('/posts/', 'UsersController.getPosts')
-  Route.get('/profile/', 'UsersController.showProfile')
+  Route.get('/profile', 'UsersController.showProfile')
+  Route.patch('/profile', 'UsersController.updateProfile')
+
 }).middleware('auth')
