@@ -1,10 +1,36 @@
-import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Application from '@ioc:Adonis/Core/Application';
+import type { HttpContextContract, } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
+import User from 'App/Models/User'
+import UserValidator from 'App/Validators/UserValidator'
 import { DateTime } from 'luxon'
 
 export default class UsersController {
-    public async showProfile({ view }: HttpContextContract) {
-        return view.render('users/profile')
+    public async showProfile({ view, auth }: HttpContextContract) {
+      const user = auth.user!
+      const findUser = await User.find(user.id)
+      const image = findUser?.image
+      return view.render('users/profile', {image})
+    }
+
+    public async updateProfile({auth, request, response, session}: HttpContextContract) {
+      const user = auth.user!
+      const findUser = await User.find(user.id)
+      if (!findUser) {
+        // Handle the case where user is not found
+        return response.status(404).send("User not found");
+      }
+
+      const payload = await request.validate(UserValidator)
+
+      if (payload.image) {
+        await payload.image.move(Application.publicPath("images"));
+        
+          findUser.image = payload.image.fileName;
+          await findUser.save();
+          session.flash("success", "Profile updated successfully");
+      }
+      return response.redirect().back()
     }
 
     public async getPosts({ view, auth }: HttpContextContract) {

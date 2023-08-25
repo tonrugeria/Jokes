@@ -97,14 +97,14 @@ export default class JokesController {
     return view.render('jokes/posting')
   }
 
-  public async store({ request, response, auth }: HttpContextContract) {
+  public async store({ request, response, auth, session }: HttpContextContract) {
     const payload = await request.validate(JokeValidator)
     const user = auth.user!
 
     await user.related('jokes').create({
       content: payload.content
     })
-
+    session.flash('success', 'Joke created successfully');
     return response.redirect().back()
   }
 

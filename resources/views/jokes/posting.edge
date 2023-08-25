@@ -12,6 +12,9 @@
         @if(flashMessages.has('errors.content'))
             <p class="alert alert-danger"> {{ flashMessages.get('errors.content') }} </p>
         @end
+        @if (flashMessages.has('success'))
+            <p class="alert alert-success">{{ flashMessages.get('success') }}</p>
+        @endif
     
         <div class="d-grid gap-2">
             <button type="submit" class="btn btn-success mb-3 block flex">Create</button>

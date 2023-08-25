@@ -1,7 +1,36 @@
 @layout('layouts/main')
 
 @section('content')
-<div class="m-auto mt-5">
-    <h1>This is where the Profile is</h1>
+<div class="m-auto mt-5 text-center">
+    <form action="{{route('UsersController.updateProfile')}}?_method=PATCH" method="post" class="container col-lg-6" enctype="multipart/form-data">
+        <h1>What? Wanna Change Your Corny Face?</h1>
+        <img src="{{image ? `images/${image}` : 'images/default.svg'}}" class="my-3" width="200" alt="">
+        {{ csrfField() }}
+        <div class="input-group mb-3">
+            <label class="input-group-text" for="image">Upload</label>
+            <input type="file"  name="image" class="form-control" id="image" />
+        </div>
+        @if(flashMessages.has('errors.image'))
+            <p class="alert alert-danger">{{ flashMessages.get('errors.image') }}</p>
+        @endif
+        @if(flashMessages.has('errors.image.file'))
+            <p class="alert alert-danger">{{ flashMessages.get('errors.image.file') }}</p>
+        @endif
+        @if(flashMessages.has('errors.image.file.size'))
+            <p class="alert alert-danger">{{ flashMessages.get('errors.image.file.size') }}</p>
+        @endif
+        @if(flashMessages.has('errors.image.file.sizeValidation'))
+            <p class="alert alert-danger">{{ flashMessages.get('errors.image.file.sizeValidation') }}</p>
+        @endif
+        @if(flashMessages.has('errors.image.file.extname'))
+            <p class="alert alert-danger">{{ flashMessages.get('errors.image.file.extname') }}</p>
+        @endif
+        @if (flashMessages.has('success'))
+            <p class="alert alert-success">{{ flashMessages.get('success') }}</p>
+        @endif
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success mb-3 block flex">I hope it's cuter than before, GO!</button>
+        </div>
+    </form>
 </div>
 @endsection
