@@ -9,25 +9,25 @@ import { DateTime } from 'luxon';
 
 export default class JokesController {
 
+  public static timeAgo(jokeDate) {
+    const formattedJokeDate = DateTime.fromJSDate(jokeDate)
+    const dateNow = DateTime.now()
+    const diff = dateNow.diff(formattedJokeDate, ['days', 'hours', 'minutes'])
+    
+    if (diff.days > 0) {
+      return `${diff.days} day${diff.days === 1 ? '' : 's'} ago`;
+    } else if (diff.hours > 0) {
+      return `${diff.hours} hour${diff.hours === 1 ? '' : 's'} ago`;
+    } else if (diff.minutes > 0) {
+      const roundedMinutes = Math.floor(diff.minutes);
+      return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'} ago`;
+    } else {
+      return 'Just now';
+    }
+  }  
+
   public async index({ view, auth }: HttpContextContract) {
     const user = auth.user!
-
-    function timeAgo(jokeDate) {
-      const formattedJokeDate = DateTime.fromJSDate(jokeDate)
-      const dateNow = DateTime.now()
-      const diff = dateNow.diff(formattedJokeDate, ['days', 'hours', 'minutes'])
-      
-      if (diff.days > 0) {
-        return `${diff.days} day${diff.days === 1 ? '' : 's'} ago`;
-      } else if (diff.hours > 0) {
-        return `${diff.hours} hour${diff.hours === 1 ? '' : 's'} ago`;
-      } else if (diff.minutes > 0) {
-        const roundedMinutes = Math.floor(diff.minutes);
-        return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'} ago`;
-      } else {
-        return 'Just now';
-      }
-    }  
 
     const jokes = await Database.from('jokes')
       .join('users', 'users.id', '=', 'jokes.user_id')
@@ -35,7 +35,7 @@ export default class JokesController {
       .orderBy('jokes.updated_at', 'desc')
       .groupBy('jokes.id', 'users.username', 'users.image');
     
-    return view.render('jokes/index', { jokes, user, timeAgo })
+    return view.render('jokes/index', { jokes, user, timeAgo: JokesController.timeAgo })
   }
 
   public async create({ view }: HttpContextContract) {
@@ -104,9 +104,16 @@ export default class JokesController {
   public async showJoke({ view, params }: HttpContextContract) {
     const jokeId = params.id
     const joke = await Joke.find(jokeId)
-    const comments = await joke?.related('comments').query().orderBy('comments.updated_at', 'desc');
+    // const comments = await joke?.related('comments').query().orderBy('comments.updated_at', 'desc');
     const ratings = await joke?.related('ratings').query();
 
+    const comments = await Database.from('comments')
+      .join('users', 'users.id', '=', 'comments.user_id')
+      .join('jokes', 'jokes.id', '=', 'comments.joke_id')
+      .where('joke_id', jokeId)
+      .select('comments.*')
+      .orderBy('comments.updated_at', 'desc')
+    
     const ratingsLength = ratings?.length ?? 0
     const totalRatings = ratings?.reduce((sum, rating) => sum + rating.value, 0) ?? 0
     const averageRating = ratingsLength === 0 ? 0 : totalRatings / ratingsLength;
@@ -123,7 +130,8 @@ export default class JokesController {
       comments,
       ratingsLength, 
       averageRating,
-      roundedPercent
+      roundedPercent,
+      timeAgo: JokesController.timeAgo
     })
   }
 
