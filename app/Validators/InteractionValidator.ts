@@ -25,7 +25,7 @@ export default class InteractionValidator {
    */
   public schema = schema.create({
     rating: schema.number.optional([
-      rules.range(1, 10)
+      rules.range(1, 5)
     ]),
     comment: schema.string.optional()
   })
