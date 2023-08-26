@@ -1,0 +1,53 @@
+@layout('layouts/main')
+
+@section('content')
+
+  <div class="container my-5">
+    <div class="card mb-3" style="max-width: 2000px;">
+      <div class="row p-3">
+        <div class="col">
+          {{ joke.content}}
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h3>Team's Rate</h3>
+            {{ averageRating.toFixed(1) }} out of 5
+
+            @if (ratingsLength === 0)
+              <p>No ratings yet.</p>
+            @elseif (ratingsLength === 1)
+              <p>1 person rated this joke.</p>
+            @else
+              <p>{{ ratingsLength }} people rated this joke.
+            @endif
+
+            @each((rating, index) in roundedPercent.reverse())
+            <div class="d-flex align-items-center">
+              {{ 5 - index }}
+              <div class="progress w-100 mx-1">
+                <div class="progress-bar" style="width: {{rating}}%"></div>
+              </div>
+              {{ rating }}%
+            </div>
+            @end
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Comments</h2>
+    <div class="card mb-3" style="max-width: 2000px;">
+      @each(comment in comments)
+        <div class="row p-3">
+          <div class="col">
+            <div class="card-body">
+              {{ comment.content }}
+              {{  }}
+            </div>
+          </div>
+        </div>
+      @endeach
+    </div>
+  </div>
+
+@endsection

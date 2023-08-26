@@ -28,16 +28,14 @@ Route.group(() => {
 }).middleware('guest')
 
 Route.get('/logout', "AuthController.logout")
-// Route.get('*', async ({ response }) => {
-//   return response.redirect().toPath('views/not_found'); // Redirect to the "not-found" page
-// });
-// Route.get('/not-found', 'NotFoundController.index').as('notFound');
 
 Route.group(() => {
   Route.get('/', async ({ view }) => {
     return view.render('jokes/index')
   })
   Route.resource('jokes', 'JokesController')
+
+  Route.get('/jokes/:id/rate-comment', 'JokesController.showJoke')
   Route.post('/jokes/:id/interactions', 'JokesController.interactions')
 
   Route.get('/posts', 'UsersController.getPosts')

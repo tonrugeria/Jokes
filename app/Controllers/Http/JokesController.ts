@@ -9,61 +9,6 @@ import { DateTime } from 'luxon';
 
 export default class JokesController {
 
-  public async interactions({ params, request, response, auth }: HttpContextContract) {
-    try {
-      const payload = await request.validate(InteractionValidator)
-      const user = auth.user!
-      const joke = await Joke.find(params.id)
-
-      if(!joke) {
-        return response.notFound({
-          message: 'Joke not found'
-        })
-      }
-
-      const existingRating = await Rating
-        .query()
-        .where('user_id', user.id)
-        .where('joke_id', joke.id)
-        .first()
-
-      const existingComment = await Comment
-        .query()
-        .where('user_id', user.id)
-        .where('joke_id', joke.id)
-        .first()
-
-      if(payload.rating) {
-        if (existingRating) {
-          existingRating.value = payload.rating
-          await existingRating.save()
-        } else {
-          await user.related('ratings').create({
-            jokeId: joke.id,
-            value: payload.rating
-          })
-        }
-      }
-
-      if(payload.comment) {
-        if (existingComment) {
-          existingComment.content = payload.comment
-          await existingComment.save()
-        } else {
-          await user.related('comments').create({
-            jokeId: joke.id,
-            content: payload.comment
-          })
-        }
-      }
-
-      return response.created({ message: 'Interactions recorded Successfully'})
-
-    } catch (error) {
-      return response.badRequest(error.messages)
-    }
-  }
-
   public async index({ view, auth }: HttpContextContract) {
     const user = auth.user!
 
@@ -154,5 +99,87 @@ export default class JokesController {
     await joke.delete()
 
     return response.redirect().back()
+  }
+
+  public async showJoke({ view, params }: HttpContextContract) {
+    const jokeId = params.id
+    const joke = await Joke.find(jokeId)
+    const comments = await joke?.related('comments').query().orderBy('comments.updated_at', 'desc');
+    const ratings = await joke?.related('ratings').query();
+
+    const ratingsLength = ratings?.length ?? 0
+    const totalRatings = ratings?.reduce((sum, rating) => sum + rating.value, 0) ?? 0
+    const averageRating = ratingsLength === 0 ? 0 : totalRatings / ratingsLength;
+
+    const ratingCounts = [0, 0, 0, 0, 0];
+    ratings?.forEach(rating => {
+      ratingCounts[rating.value - 1]++;
+    });
+    const ratingPercentages = ratingCounts.map(count => (count / ratingsLength) * 100);
+    const roundedPercent = ratingPercentages.map(percentage => Math.round(percentage));
+    
+    return view.render('jokes/comments_ratings', {
+      joke, 
+      comments,
+      ratingsLength, 
+      averageRating,
+      roundedPercent
+    })
+  }
+
+  public async interactions({ params, request, response, auth }: HttpContextContract) {
+    try {
+      const payload = await request.validate(InteractionValidator)
+      const user = auth.user!
+      const joke = await Joke.find(params.id)
+
+      if(!joke) {
+        return response.notFound({
+          message: 'Joke not found'
+        })
+      }
+
+      const existingRating = await Rating
+        .query()
+        .where('user_id', user.id)
+        .where('joke_id', joke.id)
+        .first()
+
+      const existingComment = await Comment
+        .query()
+        .where('user_id', user.id)
+        .where('joke_id', joke.id)
+        .first()
+
+      if(payload.rating) {
+        if (existingRating) {
+          existingRating.value = payload.rating
+          await existingRating.save()
+        } else {
+          await user.related('ratings').create({
+            jokeId: joke.id,
+            value: payload.rating
+          })
+        }
+      }
+
+      if(payload.comment) {
+        if (existingComment) {
+          existingComment.content = payload.comment
+          await existingComment.save()
+        } else {
+          await user.related('comments').create({
+            jokeId: joke.id,
+            content: payload.comment
+          })
+        }
+      }
+
+
+      return response.created({ message: 'Interactions recorded Successfully'})
+
+    } catch (error) {
+      return response.badRequest(error.messages)
+    }
   }
 }
