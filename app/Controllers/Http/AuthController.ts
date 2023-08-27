@@ -16,7 +16,7 @@ export default class AuthController {
   
       response.status(201)
       session.flash('success', 'Registration Successfully')
-      response.redirect().toPath('/jokes')
+      response.redirect().toPath('jokes/index')
   }
 
   public async loginForm({ view }: HttpContextContract) {

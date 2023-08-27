@@ -7,8 +7,28 @@
       <div class="row p-3">
         <div class="col fs-5 fw-light">
           {{ joke.content}}
+          <form action="{{ route('JokesController.interactions', { id: joke.id }) }}?_method=PATCH" method="post">
+            {{ csrfField() }}
+            <div class="rating-container mt-5">
+              @each(i in [1, 2, 3, 4, 5])
+                @if(personalRating === i)
+                  <input type="radio" id="rating{{ i }}" name="rating" value="{{ i }}" class="sr-only" checked>
+                  <label for="rating{{ i }}">{{ i }}</label>
+                @else
+                  <input type="radio" id="rating{{ i }}" name="rating" value="{{ i }}" class="sr-only">
+                  <label for="rating{{ i }}">{{ i }}</label>
+                @endif
+              @endeach
+            </div>
+            @if(personalRating === undefined)
+              <button type="submit" class="btn btn-primary mt-3">Rate it here Please</button>
+            @else
+            <button type="submit" class="btn btn-primary mt-3">Change it here</button>
+            @endif
+          </form>
         </div>
-        <div class="col-md-8">
+
+        <div class="col-md-8 mt-2">
           <div class="card-body">
             <h3>Team's Rate</h3>
             {{ averageRating.toFixed(1) }} out of 5
@@ -27,7 +47,7 @@
               <div class="progress w-100 mx-1">
                 <div class="progress-bar" style="width: {{rating}}%"></div>
               </div>
-              {{ rating }}%
+              {{ rating ? rating : 0 }}%
             </div>
             @end
           </div>
