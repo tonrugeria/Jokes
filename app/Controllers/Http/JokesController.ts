@@ -55,10 +55,14 @@ export default class JokesController {
 
   public async show({ view, params, auth }: HttpContextContract) {
     const jokeId = params.id
+    const userId = auth.user?.id
     const joke = await Joke.find(jokeId)
     const ratings = await joke?.related('ratings').query();
-    const findRating = await Rating.findBy('user_id', auth.user?.id)
-    const personalRating = findRating?.value
+    const findRating = await Rating.query()
+      .where('joke_id', jokeId)
+      .where('user_id', userId!)
+    const personalRating = findRating[0].value
+    
     const comments = await Database.from('comments')
       .join('users', 'users.id', '=', 'comments.user_id')
       .join('jokes', 'jokes.id', '=', 'comments.joke_id')
@@ -133,7 +137,6 @@ export default class JokesController {
 
   
   public async interactions({ params, request, response, auth, session }: HttpContextContract) {
-    console.log(request.body());
     
     try {
       const payload = await request.validate(InteractionValidator)

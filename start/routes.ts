@@ -14,8 +14,6 @@ Route.group(() => {
     return view.render('jokes/index')
   })
   Route.resource('jokes', 'JokesController')
-
-  Route.get('/jokes/:id/rate-comment', 'JokesController.showJoke')
   Route.patch('jokes/:id/interactions', 'JokesController.interactions')
 
   Route.get('/posts', 'UsersController.getPosts')
