@@ -53,10 +53,40 @@ export default class JokesController {
     return response.redirect().back()
   }
 
-  public async show({ params }: HttpContextContract) {
-    const joke = await Joke.findBy('id', params.id)
+  public async show({ view, params, auth }: HttpContextContract) {
+    const jokeId = params.id
+    const joke = await Joke.find(jokeId)
+    const ratings = await joke?.related('ratings').query();
+    const findRating = await Rating.findBy('user_id', auth.user?.id)
+    const personalRating = findRating?.value
+    const comments = await Database.from('comments')
+      .join('users', 'users.id', '=', 'comments.user_id')
+      .join('jokes', 'jokes.id', '=', 'comments.joke_id')
+      .where('joke_id', jokeId)
+      .select('comments.*')
+      .orderBy('comments.updated_at', 'desc')
+    const ratingsLength = ratings?.length ?? 0
+    const totalRatings = ratings?.reduce((sum, rating) => sum + rating.value, 0) ?? 0
+    const averageRating = ratingsLength === 0 ? 0 : totalRatings / ratingsLength;
+    const ratingCounts = [0, 0, 0, 0, 0];
+    
+    
+    ratings?.forEach(rating => {
+      ratingCounts[rating.value - 1]++;
+    });
 
-    return joke
+    const ratingPercentages = ratingCounts.map(count => (count / ratingsLength) * 100);
+    const roundedPercent = ratingPercentages.map(percentage => Math.round(percentage));
+    
+    return view.render('jokes/comments_ratings', {
+      joke, 
+      comments,
+      ratingsLength, 
+      averageRating,
+      roundedPercent,
+      timeAgo: JokesController.timeAgo,
+      personalRating
+    })
   }
 
   public async edit({ view, params }: HttpContextContract) {
@@ -101,41 +131,10 @@ export default class JokesController {
     return response.redirect().back()
   }
 
-  public async showJoke({ view, params }: HttpContextContract) {
-    const jokeId = params.id
-    const joke = await Joke.find(jokeId)
-    // const comments = await joke?.related('comments').query().orderBy('comments.updated_at', 'desc');
-    const ratings = await joke?.related('ratings').query();
-
-    const comments = await Database.from('comments')
-      .join('users', 'users.id', '=', 'comments.user_id')
-      .join('jokes', 'jokes.id', '=', 'comments.joke_id')
-      .where('joke_id', jokeId)
-      .select('comments.*')
-      .orderBy('comments.updated_at', 'desc')
+  
+  public async interactions({ params, request, response, auth, session }: HttpContextContract) {
+    console.log(request.body());
     
-    const ratingsLength = ratings?.length ?? 0
-    const totalRatings = ratings?.reduce((sum, rating) => sum + rating.value, 0) ?? 0
-    const averageRating = ratingsLength === 0 ? 0 : totalRatings / ratingsLength;
-
-    const ratingCounts = [0, 0, 0, 0, 0];
-    ratings?.forEach(rating => {
-      ratingCounts[rating.value - 1]++;
-    });
-    const ratingPercentages = ratingCounts.map(count => (count / ratingsLength) * 100);
-    const roundedPercent = ratingPercentages.map(percentage => Math.round(percentage));
-    
-    return view.render('jokes/comments_ratings', {
-      joke, 
-      comments,
-      ratingsLength, 
-      averageRating,
-      roundedPercent,
-      timeAgo: JokesController.timeAgo
-    })
-  }
-
-  public async interactions({ params, request, response, auth }: HttpContextContract) {
     try {
       const payload = await request.validate(InteractionValidator)
       const user = auth.user!
@@ -153,12 +152,6 @@ export default class JokesController {
         .where('joke_id', joke.id)
         .first()
 
-      const existingComment = await Comment
-        .query()
-        .where('user_id', user.id)
-        .where('joke_id', joke.id)
-        .first()
-
       if(payload.rating) {
         if (existingRating) {
           existingRating.value = payload.rating
@@ -170,6 +163,12 @@ export default class JokesController {
           })
         }
       }
+
+      const existingComment = await Comment
+        .query()
+        .where('user_id', user.id)
+        .where('joke_id', joke.id)
+        .first()
 
       if(payload.comment) {
         if (existingComment) {
@@ -183,8 +182,8 @@ export default class JokesController {
         }
       }
 
-
-      return response.created({ message: 'Interactions recorded Successfully'})
+      session.flash('success', "Updated Rating Successfully")
+      return response.redirect().back()
 
     } catch (error) {
       return response.badRequest(error.messages)
