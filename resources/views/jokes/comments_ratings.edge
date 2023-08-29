@@ -7,7 +7,7 @@
       <div class="row p-3">
         <div class="col fs-5 fw-light">
           {{ joke.content}}
-          <form action="{{ route('JokesController.interactions', { id: joke.id }) }}?_method=PATCH" method="post">
+          <form action="{{ route('JokesController.editRating', { id: joke.id }) }}?_method=PATCH" method="post">
             {{ csrfField() }}
             <div class="rating-container mt-5">
               @each(i in [1, 2, 3, 4, 5])
@@ -21,9 +21,18 @@
               @endeach
             </div>
             @if(personalRating === undefined)
-              <button type="submit" class="btn btn-primary mt-3">Rate it here Please</button>
+            <button type="submit" class="btn btn-primary mt-3 mb-2">Rate it here Please</button>
+            @if (flashMessages.has('ratingsuccess'))
+              <p class="alert alert-success w-25 p-2">{{ flashMessages.get('ratingsuccess') }}</p>
+            @endif
+            @if(flashMessages.has('errors.rating.required'))
+              <p class="alert alert-danger p-2"> {{ flashMessages.get('errors.rating.required') }} </p>
+            @end
             @else
-            <button type="submit" class="btn btn-primary mt-3">Change it here</button>
+            <button type="submit" class="btn btn-primary mt-3 mb-2">Change it here</button>
+            @if (flashMessages.has('ratingSuccess'))
+              <p class="alert alert-success w-25 p-2">{{ flashMessages.get('ratingSuccess') }}</p>
+            @endif
             @endif
           </form>
         </div>
@@ -56,17 +65,39 @@
     </div>
 
     <h2>Comments</h2>
-    <div class="card overflow-y-auto overflow-x-hidden" style="max-width: 650px; max-height: 500px">
-      @each(comment in comments)
-      <div class="row">
-        <div class="col">
-          <div class="card-body d-flex justify-content-between">
-            <div class="overflow-auto border bg-dark-subtle p-2 rounded fs-5 fw-light" style="width: 500px;">{{ comment.content }}</div>
-            <div class="text-body-secondary">{{ timeAgo(comment.updated_at)}}</div>
+    <div class=" d-flex">
+      <div class="card overflow-y-auto overflow-x-hidden" style="max-width: 700px; max-height: 500px">
+        <div class="row">
+        @each(comment in comments)
+          <div class="col">
+            <div class="card-body d-flex justify-content-between">
+              <div class="overflow-auto border bg-dark-subtle p-2 rounded fs-5 fw-light" style="width: 500px;">{{ comment.content }}</div>
+              <div class="text-body-secondary">{{ timeAgo(comment.updated_at)}}</div>
+            </div>
           </div>
+          @endeach
         </div>
       </div>
-      @endeach
+      <div class="col ms-5">
+        <a name="comments-section"></a>
+        <form action="{{ route('JokesController.postComment', { id: joke.id })}}#comments-section" method="post">
+          <h1>Post a Comment</h1>
+          {{ csrfField() }}
+          <div class="mb-3">
+              <label for="content" class="form-label">Be Kind and Respectful.</label>
+              <textarea name="content" class="form-control" id="content" rows="4" placeholder="Any Comments?"></textarea>
+          </div>
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-success mb-3 block flex">Post</button>
+          </div>
+          @if(flashMessages.has('errors.content'))
+              <p class="alert alert-danger"> {{ flashMessages.get('errors.content') }} </p>
+          @end
+          @if (flashMessages.has('commentSuccess'))
+              <p class="alert alert-success">{{ flashMessages.get('commentSuccess') }}</p>
+          @endif
+      </form>
+      </div>
     </div>
   </div>
 

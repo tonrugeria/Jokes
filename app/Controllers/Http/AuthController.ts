@@ -9,14 +9,18 @@ export default class AuthController {
 
   public async register({ request, response, auth, session }: HttpContextContract) {
 
-      const payload = await request.validate(AuthValidator)
-      const user = await User.create(payload)
-
-      await auth.login(user)
+      try {
+        const payload = await request.validate(AuthValidator)
+        const user = await User.create(payload)
   
-      response.status(201)
-      session.flash('success', 'Registration Successfully')
-      response.redirect().toPath('jokes/index')
+        await auth.login(user)
+        response
+        session.flash('success', 'Registration Successfully')
+        return response.redirect().back()
+      } catch (error) {
+        console.log(error);
+        return response.badRequest(error.messages);
+      }
   }
 
   public async loginForm({ view }: HttpContextContract) {

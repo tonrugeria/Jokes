@@ -18,7 +18,6 @@ export default class UsersController {
       const user = auth.user!
       const findUser = await User.find(user.id)
       if (!findUser) {
-        // Handle the case where user is not found
         return response.status(404).send("User not found");
       }
 
@@ -36,7 +35,6 @@ export default class UsersController {
 
     public async getPosts({ view, auth }: HttpContextContract) {
         const user = auth.user!
-
         function timeAgo(jokeDate) {
             const formattedJokeDate = DateTime.fromJSDate(jokeDate)
             const dateNow = DateTime.now()
@@ -64,13 +62,13 @@ export default class UsersController {
         return view.render('users/posts', { jokes, timeAgo })
     }
 
-    public async showChangePassword({view}: HttpContextContract) {
-      return view.render('users/password')
+    public async showChangePassword({view, auth}: HttpContextContract) {
+      const user = auth.user!
+      return view.render('users/password', { user })
     }
 
     public async changePassword({ auth, request, session, response }: HttpContextContract) {
       const user = auth.user!
-
       const payload = await request.validate(PasswordValidator)
 
       user.password = payload.password
