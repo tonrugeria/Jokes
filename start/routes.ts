@@ -1,5 +1,8 @@
 import Route from '@ioc:Adonis/Core/Route'
 
+
+
+
 Route.group(() => {
   Route.get('/register', "AuthController.registerForm")
   Route.post('/register', "AuthController.register")
@@ -7,14 +10,14 @@ Route.group(() => {
   Route.post('/login', "AuthController.login")
 }).middleware('guest')
 
-Route.get('/logout', "AuthController.logout")
-
 Route.group(() => {
-  Route.get('/', async ({ view }) => {
-    return view.render('jokes/index')
+  Route.get('/logout', "AuthController.logout")
+  Route.get('/', async ({ response }) => {
+    return response.redirect().toPath('/jokes')
   })
   Route.resource('jokes', 'JokesController')
-  Route.patch('jokes/:id/interactions', 'JokesController.interactions')
+  Route.patch('jokes/:id/editRating', 'JokesController.editRating')
+  Route.post('jokes/:id/postComment', 'JokesController.postComment')
 
   Route.get('/posts', 'UsersController.getPosts')
   Route.get('/profile', 'UsersController.showProfile')

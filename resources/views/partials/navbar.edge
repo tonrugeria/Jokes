@@ -9,8 +9,8 @@
       </button>
       <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
         <div class="offcanvas-header">
-          <img class="w-25"  src="{{user ? `images/${user.image}` : 'images/default.svg'}}" alt="">
-          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{ user ? user.username : '' }}</h5>
+          <img class="w-25"  src="{{user && user.image ? `images/${user.image}` : 'images/default.svg'}}" alt="">
+          <h5 class="offcanvas-title" id="offcanvasNavbarLabel">{{ user && user.username ? user.username : '' }}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">

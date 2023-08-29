@@ -20,12 +20,12 @@
               <a href="{{ route('JokesController.show', [joke.id])}}">More...</a>
               <div class="d-flex justify-content-between align-items-center mt-4">
                 <div class="btn-group">
-                  <a href="{{ route('JokesController.edit', [joke.id]) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                  <a href="{{ route('JokesController.edit', [joke.id]) }}" class="btn btn-sm btn-outline-secondary rounded">Edit</a>
                   <form action="{{ route('JokesController.destroy', [joke.id]) }}?_method=DELETE" method="post">
                     {{ csrfField() }}
-                    <button type="submit" class="btn btn-sm btn-outline-secondary">Delete</button>
+                  <button type="submit" class="btn btn-sm btn-outline-danger ms-1">Delete</button>
                   </form>
-                  </div>
+                </div>
                   <small class="text-muted">{{ timeAgo(joke.updated_at) }}</small>
               </div>
             </div>

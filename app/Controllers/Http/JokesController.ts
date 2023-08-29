@@ -1,11 +1,11 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Joke from 'App/Models/Joke';
 import Rating from 'App/Models/Rating';
-import Comment from 'App/Models/Comment';
 import Database from '@ioc:Adonis/Lucid/Database';
 import JokeValidator from 'App/Validators/JokeValidator';
-import InteractionValidator from 'App/Validators/InteractionValidator';
 import { DateTime } from 'luxon';
+import RatingValidator from 'App/Validators/RatingValidator';
+import CommentValidator from 'App/Validators/CommentValidator';
 
 export default class JokesController {
 
@@ -28,24 +28,28 @@ export default class JokesController {
 
   public async index({ view, auth }: HttpContextContract) {
     const user = auth.user!
-
     const jokes = await Database.from('jokes')
       .join('users', 'users.id', '=', 'jokes.user_id')
       .select('jokes.*', 'users.username', 'users.image')
       .orderBy('jokes.updated_at', 'desc')
       .groupBy('jokes.id', 'users.username', 'users.image');
     
-    return view.render('jokes/index', { jokes, user, timeAgo: JokesController.timeAgo })
-  }
+  return view.render('jokes/index', { 
+    jokes, 
+    user, 
+    timeAgo: JokesController.timeAgo,
+    })
+}
 
-  public async create({ view }: HttpContextContract) {
-    return view.render('jokes/posting')
+  public async create({ view, auth }: HttpContextContract) {
+    const user = auth.user!
+    return view.render('jokes/posting', { user})
   }
 
   public async store({ request, response, auth, session }: HttpContextContract) {
     const payload = await request.validate(JokeValidator)
     const user = auth.user!
-
+    
     await user.related('jokes').create({
       content: payload.content
     })
@@ -54,6 +58,7 @@ export default class JokesController {
   }
 
   public async show({ view, params, auth }: HttpContextContract) {
+    const user = auth.user!
     const jokeId = params.id
     const userId = auth.user?.id
     const joke = await Joke.find(jokeId)
@@ -61,7 +66,7 @@ export default class JokesController {
     const findRating = await Rating.query()
       .where('joke_id', jokeId)
       .where('user_id', userId!)
-    const personalRating = findRating[0].value
+    const personalRating = findRating[0]?.value
     
     const comments = await Database.from('comments')
       .join('users', 'users.id', '=', 'comments.user_id')
@@ -74,7 +79,6 @@ export default class JokesController {
     const averageRating = ratingsLength === 0 ? 0 : totalRatings / ratingsLength;
     const ratingCounts = [0, 0, 0, 0, 0];
     
-    
     ratings?.forEach(rating => {
       ratingCounts[rating.value - 1]++;
     });
@@ -84,6 +88,7 @@ export default class JokesController {
     
     return view.render('jokes/comments_ratings', {
       joke, 
+      user,
       comments,
       ratingsLength, 
       averageRating,
@@ -93,11 +98,12 @@ export default class JokesController {
     })
   }
 
-  public async edit({ view, params }: HttpContextContract) {
+  public async edit({ view, params, auth }: HttpContextContract) {
+    const user = auth.user!
     const { id } = params
     const joke = await Joke.find(id)
 
-    return view.render('jokes/edit', { joke })
+    return view.render('jokes/edit', { joke, user })
   }
 
   public async update({ request, response, params, session }: HttpContextContract) {
@@ -136,10 +142,10 @@ export default class JokesController {
   }
 
   
-  public async interactions({ params, request, response, auth, session }: HttpContextContract) {
+  public async editRating({ params, request, response, auth, session }: HttpContextContract) {
     
     try {
-      const payload = await request.validate(InteractionValidator)
+      const payload = await request.validate(RatingValidator)
       const user = auth.user!
       const joke = await Joke.find(params.id)
 
@@ -166,30 +172,26 @@ export default class JokesController {
           })
         }
       }
-
-      const existingComment = await Comment
-        .query()
-        .where('user_id', user.id)
-        .where('joke_id', joke.id)
-        .first()
-
-      if(payload.comment) {
-        if (existingComment) {
-          existingComment.content = payload.comment
-          await existingComment.save()
-        } else {
-          await user.related('comments').create({
-            jokeId: joke.id,
-            content: payload.comment
-          })
-        }
-      }
-
-      session.flash('success', "Updated Rating Successfully")
+      
       return response.redirect().back()
 
     } catch (error) {
-      return response.badRequest(error.messages)
+      session.flash('errors.rating.required', 'Please Rate a valid Rating!')
+      return response.redirect().back()
     }
+  }
+
+  public async postComment({ response, request, params, auth, session }: HttpContextContract) {
+    const payload = await request.validate(CommentValidator)
+    const user = auth.user!
+    const joke = await Joke.find(params.id)
+    
+    await user.related('comments').create({
+      jokeId: joke?.id,
+      content: payload.content
+    })
+    session.flash('commentSuccess', 'Comment posted Successfully');
+    
+    return response.redirect().back()
   }
 }
