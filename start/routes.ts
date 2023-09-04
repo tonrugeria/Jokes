@@ -25,5 +25,7 @@ Route.group(() => {
   Route.get('/change-password', "UsersController.showChangePassword")
   Route.patch('/change-password', "UsersController.changePassword")
 
-  Route.get('*', 'NotFoundController.index').as('notFound');
+  Route.get('*', ( { response } ) => {
+    return response.redirect().back()
+  })
 }).middleware('auth')
