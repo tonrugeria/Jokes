@@ -1,8 +1,5 @@
 import Route from '@ioc:Adonis/Core/Route'
 
-
-
-
 Route.group(() => {
   Route.get('/register', "AuthController.registerForm")
   Route.post('/register', "AuthController.register")
