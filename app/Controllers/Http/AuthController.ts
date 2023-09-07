@@ -3,24 +3,20 @@ import User from 'App/Models/User'
 import AuthValidator from 'App/Validators/AuthValidator'
 
 export default class AuthController {
+
   public async registerForm({ view }: HttpContextContract) {
     return view.render('auth/register')
   }
 
   public async register({ request, response, auth, session }: HttpContextContract) {
+    
+      const payload = await request.validate(AuthValidator)
+      const user = await User.create(payload)
 
-      try {
-        const payload = await request.validate(AuthValidator)
-        const user = await User.create(payload)
-  
-        await auth.login(user)
-        response
-        session.flash('success', 'Registration Successfully')
-        return response.redirect().back()
-      } catch (error) {
-        console.log(error);
-        return response.badRequest(error.messages);
-      }
+      await auth.login(user)
+      session.flash('success', 'Registration Successfully')
+      return response.redirect().back()
+    
   }
 
   public async loginForm({ view }: HttpContextContract) {

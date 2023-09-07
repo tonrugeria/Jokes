@@ -14,34 +14,38 @@
             <h1 class="h3 mb-3 fw-normal">Please Register</h1>
             @if(flashMessages.has('errors.username'))
                 <p class="alert alert-danger"> {{ flashMessages.get('errors.username') }} </p>
-            @end
+            @endif
             <div class="form-floating">
                 <input type="text" class="form-control" id="username" name="username" required autocomplete="off"><br>
                 <label for="username">Username</label>
             </div>
             @if(flashMessages.has('errors.email'))
                 <p class="alert alert-danger"> {{ flashMessages.get('errors.email') }} </p>
-            @end
+            @endif
             <div class="form-floating">
                 <input type="email" class="form-control" id="email" name="email" required autocomplete="off"><br>
                 <label for="email">Email</label>
             </div>
             @if(flashMessages.has('errors.password'))
                 <p class="alert alert-danger"> {{ flashMessages.get('errors.password') }} </p>
-            @end
+            @endif
             <div class="form-floating">
                 <input type="password" class="form-control" id="password" name="password" required autocomplete="off"><br>
                 <label for="password">Password</label>
             </div>
             @if(flashMessages.has('errors.password_confirmation'))
                 <p class="alert alert-danger"> {{ flashMessages.get('errors.password_confirmation') }} </p>
-            @end
+            @endif
             <div class="form-floating">
                 <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required autocomplete="off"><br>
                 <label for="password_confirmation">Confirm Password</label>
             </div>
+            @if(flashMessages.has('error'))
+                <p class="alert alert-danger"> {{ flashMessages.get('error') }} </p>
+            @endif
             <button type="submit" class="btn btn-success btn-lg w-100">Register</button>
             <span>Already Registered?</span><a href="{{route('AuthController.login')}}">Login</a>
+            
         </form>
     </div>
 
