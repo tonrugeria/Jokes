@@ -3,28 +3,11 @@ import Joke from 'App/Models/Joke';
 import Rating from 'App/Models/Rating';
 import Database from '@ioc:Adonis/Lucid/Database';
 import JokeValidator from 'App/Validators/JokeValidator';
-import { DateTime } from 'luxon';
 import RatingValidator from 'App/Validators/RatingValidator';
 import CommentValidator from 'App/Validators/CommentValidator';
+import { timeAgo } from '../Utils/TimeUtils';
 
 export default class JokesController {
-
-  public static timeAgo(jokeDate) {
-    const formattedJokeDate = DateTime.fromJSDate(jokeDate)
-    const dateNow = DateTime.now()
-    const diff = dateNow.diff(formattedJokeDate, ['days', 'hours', 'minutes'])
-    
-    if (diff.days > 0) {
-      return `${diff.days} day${diff.days === 1 ? '' : 's'} ago`;
-    } else if (diff.hours > 0) {
-      return `${diff.hours} hour${diff.hours === 1 ? '' : 's'} ago`;
-    } else if (diff.minutes > 0) {
-      const roundedMinutes = Math.floor(diff.minutes);
-      return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'} ago`;
-    } else {
-      return 'Just now';
-    }
-  }  
 
   public async index({ view, auth }: HttpContextContract) {
     const user = auth.user!
@@ -37,7 +20,7 @@ export default class JokesController {
   return view.render('jokes/index', { 
     jokes, 
     user, 
-    timeAgo: JokesController.timeAgo,
+    timeAgo,
     })
 }
 
@@ -93,7 +76,7 @@ export default class JokesController {
       ratingsLength, 
       averageRating,
       roundedPercent,
-      timeAgo: JokesController.timeAgo,
+      timeAgo,
       personalRating
     })
   }

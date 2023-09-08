@@ -4,7 +4,7 @@ import Database from '@ioc:Adonis/Lucid/Database'
 import User from 'App/Models/User'
 import PasswordValidator from 'App/Validators/PasswordValidator';
 import UserValidator from 'App/Validators/UserValidator'
-import { DateTime } from 'luxon'
+import { timeAgo } from '../Utils/TimeUtils';
 
 export default class UsersController {
   public async showProfile({ view, auth }: HttpContextContract) {
@@ -35,22 +35,6 @@ export default class UsersController {
 
   public async getPosts({ view, auth }: HttpContextContract) {
     const user = auth.user!
-    function timeAgo(jokeDate) {
-      const formattedJokeDate = DateTime.fromJSDate(jokeDate)
-      const dateNow = DateTime.now()
-      const diff = dateNow.diff(formattedJokeDate, ['days', 'hours', 'minutes'])
-        
-      if (diff.days > 0) {
-        return `${diff.days} day${diff.days === 1 ? '' : 's'} ago`;
-      } else if (diff.hours > 0) {
-        return `${diff.hours} hour${diff.hours === 1 ? '' : 's'} ago`;
-      } else if (diff.minutes > 0) {
-        const roundedMinutes = Math.floor(diff.minutes);
-        return `${roundedMinutes} minute${roundedMinutes === 1 ? '' : 's'} ago`;
-      } else {
-        return 'Just now';
-      }
-    }  
 
     const jokes = await Database.from('jokes')
       .join('users', 'users.id', '=', 'jokes.user_id')
