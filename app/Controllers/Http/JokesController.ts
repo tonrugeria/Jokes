@@ -6,6 +6,7 @@ import JokeValidator from 'App/Validators/JokeValidator';
 import RatingValidator from 'App/Validators/RatingValidator';
 import CommentValidator from 'App/Validators/CommentValidator';
 import { timeAgo } from '../Utils/TimeUtils';
+import Comment from 'App/Models/Comment';
 
 export default class JokesController {
 
@@ -119,9 +120,21 @@ export default class JokesController {
       return response.forbidden({ message: 'You do not have permission to delete this Joke'})
     }
 
-    await joke.delete()
+    const trx = await Database.transaction();
 
-    return response.redirect().back()
+  try {
+    await Rating.query().where('joke_id', joke.id).delete();
+    await Comment.query().where('joke_id', joke.id).delete();
+    await joke.delete();
+
+    await trx.commit();
+
+    return response.redirect().back();
+  } catch (error) {
+    await trx.rollback();
+
+    return response.status(500).send('An error occurred while deleting the joke.');
+  }
   }
 
   
